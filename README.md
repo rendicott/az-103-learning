@@ -13,6 +13,7 @@ Scripts and materials used while studying for the AZ-103 Microsoft Azure Adminis
 * It seems to be impossible to load balance an existing set of VMs unless you had enough foresight to put them in an availability set before launching them. This is wacky.
 * If I create an object called "Public IP Address" and I select "Dynamic" you should probably give me a warning that says I won't actually get a public IP until I associate rules to the load balancer. 
 * Why doesn't the console have bulk actions? When I select multiple items from a list of network interfaces I should be able to delete all of them. 
+* ARM template `resourceId()` lookup functions are annoying. See my rant below. 
 
 # Handy Powershell Commands
 
@@ -26,3 +27,41 @@ With Azure CLI
 ```
 az vm show -d -n web1 --resource-group webfarm --query privateIps
 ```
+
+
+# ARM resourceId() rant
+In the following snippet of ARM template
+
+```json
+    {
+      "apiVersion": "2018-02-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('networkInterfaceName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpAddressName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIpAddressName'))]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+```
+
+The `resourceId()` function for looking up the ID of an existing subnet is rather infuriating. The ARM docs tell you in a very cryptic way that you basically need the same number of positional args as you have slashes in the resource type namespace identifier.
+
+So for a namespace like `Microsoft.Network/virtualNetworks/subnets` you'll need to have one positional argument for `virtualNetworks` and one for `subnets`.
+
+Shorter namespaces like `Microsoft.Network/networkInterfaces` would only require one argument for the `networkInterfaces` section. 
