@@ -8,9 +8,9 @@ function Add-LinuxVMs {
     Add-LinuxVM -VMName "web1" -VMSubnet "web-1" `
         -VMUserdata $VMUserdata -VMKey "../misc/id_rsa.pub" `
         -VMAvailabilitySet "webset"
-    Add-LinuxVM -VMName "web2" -VMSubnet "web-2" `
-        -VMUserdata $VMUserdata -VMKey "../misc/id_rsa.pub" `
-        -VMAvailabilitySet "webset"
+    #Add-LinuxVM -VMName "web2" -VMSubnet "web-2" `
+    #    -VMUserdata $VMUserdata -VMKey "../misc/id_rsa.pub" `
+    #    -VMAvailabilitySet "webset"
 }
 function Remove-LinuxVMs {
     Remove-VM -VMName "web1"
